@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chistes - App Chistes</title>
+  <meta name="theme-color" content="#fffbfe">
+  <link rel="stylesheet" href="css/estilos.css"> <!-- Tu archivo CSS para Material Design -->
+  <script type="module" src="js/configura.js"></script> <!-- Script para componentes MD3 -->
+</head>
+
+<body>
+  <form id="chisteForm" novalidate onsubmit="procesa(event)">
+    <md-top-app-bar>
+    </md-top-app-bar>
+ <nav-tab-fixed id="tab"></nav-tab-fixed>
+    <main>
+      <h1>Selecciona un nombre y recibe un chiste</h1>
+
+      <!-- Selector con Material Design -->
+      <p class="md-filled-text-field">
+        <md-select-menu id="nombre" required aria-labelledby="etiquetaNombre" options="opcionesDeNombres"
+          oninput="copiaMensajes()">
+        </md-select-menu>
+        <span id="etiquetaNombre" accesskey="N">Nombres*</span>
+        <small id="supportingNombre">* Obligatorio</small>
+      </p>
+
+      <p>
+        <button type="submit" class="md-filled-button" style="width: 100%;">Enviar</button>
+      </p>
+    </main>
+
+    <!-- Opciones de nombres -->
+    <md-options-menu id="opcionesDeNombres" aria-label="Opciones de nombres">
+      <span data-value="" title="Selecciona un nombre"></span>
+      <span data-value="Ana">Ana</span>
+      <span data-value="Carlos">Carlos</span>
+      <span data-value="Samantha">Samantha</span>
+      <span data-value="Yolibet">Yolibet</span>
+      <span data-value="Eduardo">Eduardo</span>
+    </md-options-menu>
+  </form>
+
+
+
+  <script type="module">
+    import { muestraError } from "./lib/js/muestraError.js"; // Manejo de errores
+    import { muestraTextoDeAyuda } from "./lib/js/muestraTextoDeAyuda.js"; // Validación
+
+    // Función para mostrar mensajes de ayuda
+    function copiaMensajes() {
+      muestraTextoDeAyuda(nombre, supportingNombre, "* Obligatorio");
+    }
+    window["copiaMensajes"] = copiaMensajes;
+
+    // Función que procesa el formulario
+    function procesa(evt) {
+      evt.preventDefault();
+      try {
+        copiaMensajes();
+        if (nombre.validity.valid) {
+          const nombreSeleccionado = nombre.value;
+
+          // Enviar al servicio PHP
+          let formData = new FormData();
+          formData.append('nombre', nombreSeleccionado);
+
+          fetch('srv/procesa.php', {
+            method: 'POST',
+            body: formData
+          })
+            .then(response => response.json())
+            .then(data => {
+              alert(data.chiste); // Mostrar el chiste en un alert
+            })
+            .catch(error => {
+              muestraError(error); // Manejar el error
+            });
+        }
+      } catch (e) {
+        muestraError(e);
+      }
+    }
+    window["procesa"] = procesa;
+  </script>
+
+</body>
+
+</html>
